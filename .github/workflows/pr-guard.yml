@@ -1,0 +1,71 @@
+name: PR Guard
+
+# Enforces CONTRIBUTING.md PR checklist (see .github/PULL_REQUEST_TEMPLATE.md).
+# Intentionally has no paths-ignore so docs-only PRs are still checked.
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, ready_for_review]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  pr-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body against checklist
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_IS_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import sys
+
+          body = os.environ.get("PR_BODY") or ""
+          head_ref = os.environ.get("PR_HEAD_REF") or ""
+          is_draft = os.environ.get("PR_IS_DRAFT", "false") == "true"
+          labels = {
+              label.strip().lower()
+              for label in os.environ.get("PR_LABELS", "").split(",")
+              if label.strip()
+          }
+
+          if is_draft:
+              print("PR is a draft; pr-guard passes as advisory only.")
+              sys.exit(0)
+
+          if "skip-guard" in labels:
+              print("Label 'skip-guard' present; pr-guard passes.")
+              sys.exit(0)
+
+          lowered = body.lower()
+          no_behavior_change = "n/a" in lowered and "no behavior change" in lowered
+          branch_exempt = head_ref.startswith(("docs/", "chore/"))
+          spec_exempt = no_behavior_change and (branch_exempt or bool({"docs", "chore"} & labels))
+          errors = []
+
+          if not spec_exempt and "plans/domains/" not in body:
+              errors.append(
+                  "Missing spec link: include `plans/domains/.../NN-*.md` "
+                  "or `N/A -- docs/chore, no behavior change` on a docs/ or chore/ branch."
+              )
+
+          if "## gates evidence" not in lowered:
+              errors.append("Missing `## Gates evidence` section; do not delete template sections.")
+
+          if "- [ ]" in body:
+              errors.append("Unchecked checklist item (`- [ ]`) found; check every box before merge.")
+
+          if errors:
+              print("pr-guard FAILED:")
+              for error in errors:
+                  print(f" - {error}")
+              print("See CONTRIBUTING.md Agentic engineering methodology / PR checklist.")
+              sys.exit(1)
+
+          print("pr-guard passed.")
+          PY

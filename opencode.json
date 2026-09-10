@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md", "plans/ARCHITECTURE.md", "plans/INDEX.md", "CONTRIBUTING.md"],
+  "share": "disabled",
+  "permission": {
+    "edit": {
+      "*": "allow",
+      ".env": "deny",
+      ".envs/.production/**": "deny",
+      ".envs/.local/.django": "deny",
+      ".envs/.local/.postgres": "deny"
+    },
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny",
+      "just prune*": "ask",
+      "docker *prune*": "ask",
+      "docker *down -v*": "ask"
+    }
+  }
+}
