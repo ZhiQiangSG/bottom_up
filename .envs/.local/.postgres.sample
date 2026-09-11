@@ -1,0 +1,8 @@
+# Sample local Postgres env for CI / onboarding.
+# Copy to `.postgres` (gitignored, never commit real secrets):
+#   cp .envs/.local/.postgres.sample .envs/.local/.postgres
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=bottom_up
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres

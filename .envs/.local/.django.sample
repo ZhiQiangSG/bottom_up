@@ -1,0 +1,15 @@
+# Sample local Django env for CI / onboarding.
+# Copy to `.django` (gitignored, never commit real secrets):
+#   cp .envs/.local/.django.sample .envs/.local/.django
+USE_DOCKER=yes
+REDIS_URL=redis://redis:6379/0
+CELERY_FLOWER_USER=flower
+CELERY_FLOWER_PASSWORD=flower
+IPYTHONDIR=/app/.ipython
+
+# Optional (all have dev defaults in config/settings/):
+# DJANGO_SECRET_KEY=unsafe-ci-default
+# DJANGO_DEBUG=True
+# DJANGO_READ_DOT_ENV_FILE=False
+# EMAIL_HOST=mailpit
+# DATABASE_URL=
